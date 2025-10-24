@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 207 69% 91%;
+    --foreground: 215 28% 17%;
+    --card: 207 69% 94%;
+    --card-foreground: 215 28% 17%;
+    --popover: 207 69% 94%;
+    --popover-foreground: 215 28% 17%;
+    --primary: 206 65% 56%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 206 60% 80%;
+    --secondary-foreground: 215 28% 17%;
+    --muted: 206 60% 85%;
+    --muted-foreground: 215 20% 45%;
+    --accent: 47 89% 60%;
+    --accent-foreground: 47 100% 15%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 206 30% 75%;
+    --input: 206 30% 80%;
+    --ring: 206 65% 56%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+ 
+  .dark {
+    --background: 216 33% 15%;
+    --foreground: 210 40% 98%;
+    --card: 216 33% 20%;
+    --card-foreground: 210 40% 98%;
+    --popover: 216 33% 20%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 206 65% 56%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 216 33% 25%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 216 33% 25%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 47 89% 60%;
+    --accent-foreground: 47 100% 15%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 216 33% 30%;
+    --input: 216 33% 30%;
+    --ring: 206 65% 56%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.day-completed::after {
+  content: '✓';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 0.7rem;
+  color: hsl(var(--accent-foreground));
+  background: hsl(var(--accent));
+  border-radius: 50%;
+  width: 1rem;
+  height: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.dark .day-completed::after {
+   color: hsl(var(--accent-foreground));
+   background: hsl(var(--accent));
+}
+
+.rdp-day_selected.day-completed::after {
+  color: hsl(var(--primary));
+  background-color: hsl(var(--primary-foreground));
+}
+

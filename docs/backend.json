@@ -1,0 +1,258 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the Peak Progress application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "googleId": {
+          "type": "string",
+          "description": "Google ID of the user, used for authentication. Nullable if the user did not sign up with Google."
+        },
+        "appleId": {
+          "type": "string",
+          "description": "Apple ID of the user, used for authentication. Nullable if the user did not sign up with Apple."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user account was created.",
+          "format": "date-time"
+        },
+        "lastLogin": {
+          "type": "string",
+          "description": "Timestamp indicating the last time the user logged in.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "createdAt",
+        "lastLogin"
+      ]
+    },
+    "Progress": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Progress",
+      "type": "object",
+      "description": "Represents the user's progress in quitting smoking, including their personal information.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The user's name."
+        },
+        "age": {
+          "type": "number",
+          "description": "The user's age."
+        },
+        "avatarUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the user's avatar."
+        },
+        "quitDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date the user quit smoking."
+        },
+        "cigarettesPerDay": {
+          "type": "number",
+          "description": "Number of cigarettes the user used to smoke per day."
+        },
+        "yearsSmoked": {
+          "type": "number",
+          "description": "How many years the user smoked."
+        },
+        "packPrice": {
+          "type": "number",
+          "description": "The price of a pack of cigarettes."
+        },
+        "packSize": {
+          "type": "number",
+          "description": "The number of cigarettes in a pack."
+        }
+      },
+      "required": [
+        "name",
+        "age",
+        "quitDate",
+        "cigarettesPerDay",
+        "yearsSmoked",
+        "packPrice",
+        "packSize"
+      ]
+    },
+    "MotivationalCard": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MotivationalCard",
+      "type": "object",
+      "description": "Represents a motivational card or badge awarded to the user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the motivational card."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the motivational card."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description or message on the motivational card."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the image associated with the card.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "imageUrl"
+      ]
+    },
+    "UserMotivationalCard": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserMotivationalCard",
+      "type": "object",
+      "description": "Represents the association between a user and a motivational card they've received.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user-card association."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User. (Relationship: User 1:N UserMotivationalCard)"
+        },
+        "motivationalCardId": {
+          "type": "string",
+          "description": "Reference to the MotivationalCard. (Relationship: MotivationalCard 1:N UserMotivationalCard)"
+        },
+        "receivedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user received the motivational card.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "motivationalCardId",
+        "receivedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "google.com",
+      "apple.com",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information.  Authentication is handled via Google or Apple Sign-In. Data is private to each user, accessible only to the authenticated user with the matching userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/progress/{userId}",
+        "definition": {
+          "entityName": "Progress",
+          "schema": {
+            "$ref": "#/backend/entities/Progress"
+          },
+          "description": "Stores the user's quitting progress. Accessible only to the authenticated user with the matching userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/progress/{progressId}",
+        "definition": {
+          "entityName": "Progress",
+          "schema": {
+            "$ref": "#/backend/entities/Progress"
+          },
+          "description": "Stores the user's progress in quitting smoking.  Accessible only to the authenticated user with the matching userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
+            },
+            {
+              "name": "progressId",
+              "description": "The unique identifier for the progress entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/motivationalCards/{userMotivationalCardId}",
+        "definition": {
+          "entityName": "UserMotivationalCard",
+          "schema": {
+            "$ref": "#/backend/entities/UserMotivationalCard"
+          },
+          "description": "Stores the motivational cards awarded to the user. Accessible only to the authenticated user with the matching userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
+            },
+            {
+              "name": "userMotivationalCardId",
+              "description": "The unique identifier for the user motivational card association."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/motivationalCards/{motivationalCardId}",
+        "definition": {
+          "entityName": "MotivationalCard",
+          "schema": {
+            "$ref": "#/backend/entities/MotivationalCard"
+          },
+          "description": "Stores the general motivational card information. Accessible to all users for displaying available cards, but not for modification.",
+          "params": [
+            {
+              "name": "motivationalCardId",
+              "description": "The unique identifier for the motivational card."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to manage user data, progress tracking, and motivational content for the Peak Progress application. It prioritizes authorization independence by using path-based ownership for user-specific data, ensuring that security rules can be enforced without relying on `get()` calls. \n\nThe `/users/{userId}` collection stores user profiles, authenticated via Google or Apple.  User-specific data, such as `/users/{userId}/progress`, `/users/{userId}/motivationalCards`, are structured as subcollections, guaranteeing only the authenticated user can access their data. This approach avoids complex authorization logic and enables atomic operations. The use of subcollections enables secure list operations by leveraging path-based rules, satisfying the QAPs requirement. The structure also incorporates the ability to create user-specific motivational cards."
+  }
+}

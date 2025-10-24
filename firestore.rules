@@ -1,0 +1,151 @@
+/**
+ * @file Firestore Security Rules for Peak Progress
+ * @version Prototyping
+ *
+ * @Core Philosophy:
+ * This ruleset enforces a strict user-ownership model, where users can only access their own data.
+ *
+ * @Data Structure:
+ * - /users/{userId}: Stores user profiles, accessible only to the owner.
+ * - /progress/{userId}: Stores user progress, accessible only to the owner.
+ * - /users/{userId}/progress/{progressId}:  Stores user progress, accessible only to the owner.
+ * - /users/{userId}/motivationalCards/{userMotivationalCardId}: Stores user-specific motivational cards, accessible only to the owner.
+ * - /motivationalCards/{motivationalCardId}: Stores global motivational card data, publicly readable but not writable by clients.
+ *
+ * @Key Security Decisions:
+ * - User data is strictly private and uses path-based authorization.
+ * - Public listing of user documents or progress documents is disallowed.
+ * - The motivationalCards collection is publicly readable, but only writeable through the Firebase console, not by client applications.
+ *
+ * @Denormalization for Authorization:
+ *  - The userId is part of all subcollection documents, which enables path based authorization.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description: Manages user profile data, ensuring only the user can access their profile.
+     * @path: /users/{userId}
+     * @allow: (create) User with UID 'user123' can create their own profile document with id matching their UID.
+     * @deny: (get) User with UID 'user456' cannot read the profile of user 'user123'.
+     * @principle: Enforces document ownership for all operations.
+     */
+    match /users/{userId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource.data != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+      /**
+       * @description Stores the user's quitting progress. Accessible only to the authenticated user with the matching userId.
+       * @path /progress/{userId}
+       * @allow get, create, update, delete if the user is the owner
+       * @deny get, create, update, delete if the user is not the owner
+       * @principle Enforces document ownership for all operations.
+       */
+    match /progress/{userId} {
+
+        function isSignedIn() {
+            return request.auth != null;
+        }
+
+        function isOwner(userId) {
+            return request.auth.uid == userId;
+        }
+
+        function isExistingOwner(userId) {
+            return isOwner(userId) && resource.data != null;
+        }
+
+        allow get: if isOwner(userId);
+        allow list: if false;
+        allow create: if isSignedIn() && isOwner(userId);
+        allow update: if isExistingOwner(userId);
+        allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description: Manages user-specific progress entries.
+     * @path: /users/{userId}/progress/{progressId}
+     * @allow: (create) User with UID 'user123' can create a progress entry under their profile.
+     * @deny: (update) User with UID 'user456' cannot update a progress entry belonging to user 'user123'.
+     * @principle: Restricts access to a user's own progress data.
+     */
+    match /users/{userId}/progress/{progressId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource.data != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description: Manages user-specific motivational cards.
+     * @path: /users/{userId}/motivationalCards/{userMotivationalCardId}
+     * @allow: (create) User with UID 'user123' can have a motivational card added to their profile.
+     * @deny: (delete) User with UID 'user456' cannot delete a motivational card belonging to user 'user123'.
+     * @principle: Enforces user-specific data isolation.
+     */
+    match /users/{userId}/motivationalCards/{userMotivationalCardId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource.data != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description: Manages global motivational card data, allowing public read access but preventing client modifications.
+     * @path: /motivationalCards/{motivationalCardId}
+     * @allow: (get) Any user can retrieve motivational card data.
+     * @deny: (create) No user can create motivational card data via the client; this should be done via the Firebase console.
+     * @principle: Provides public read access to shared data while restricting write access.
+     */
+    match /motivationalCards/{motivationalCardId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
